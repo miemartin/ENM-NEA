@@ -5,7 +5,7 @@ The order in which the scripts should be used is as follows:
 
 1. Environmental Data: This script imports environmental data, assigns projections, and clips variables to the study area.
 
-2. occurrence data: This script imports the occurrence data and does all the processing for it. It eliminates duplicate data, assigns only one data per pixel and finally creates a .csv file where the values of the environmental variables are obtained for each location.
+2. Occurrence data: This script imports the occurrence data and does all the processing for it. It eliminates duplicate data, assigns only one data per pixel and finally creates a .csv file where the values of the environmental variables are obtained for each location.
 
 3. VIF analysis: this is the script where the selection of environmental variables is carried out based on the VIF values and Pearson correlation.
 
