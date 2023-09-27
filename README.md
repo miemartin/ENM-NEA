@@ -13,4 +13,4 @@ The order in which the scripts should be used is as follows:
 
 5. Best model Ae. aegypti all fc.LQ_rm.2: this is the script that runs the best selected model. Applies 25-fold cross validation. The model metrics, the average predictive map, and the response curves of the environmental variables used are obtained. Then the model is transferred to the new study area (in this case, Northeast Argentina) and finally the binary map is obtained by using the “p10” threshold rule.
 
-6. SuitableArea: this is the script where the area (in percentages) that is suitable for the species is calculated from the binary maps obtained previously.
+6. Suitable area: this is the script where the area (in percentages) that is suitable for the species is calculated from the binary maps obtained previously.
