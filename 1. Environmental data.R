@@ -1,127 +1,98 @@
 # Load libraries 
 require(pacman)
-pacman::p_load(tidyverse, sf, fs, rgbif, geodata, rnaturalearthdata, rnaturalearth, 
-               dplyr,ggspatial, hrbrthemes, ggthemes, terra, raster, RColorBrewer, 
-               geodata, glue)
+pacman::p_load(tidyverse, sf, fs, rgbif, dplyr, terra, raster, dismo)
 
-## Prepare data input
-### Load environmental layers 
+# Prepare data input
 
-bio1 <- raster(paste0("raster/wc2.1_2.5m_bio_1.tif"))
-bio2 <- raster(paste0("raster/wc2.1_2.5m_bio_2.tif"))
-bio3 <- raster(paste0("raster/wc2.1_2.5m_bio_3.tif"))
-bio4 <- raster(paste0("raster/wc2.1_2.5m_bio_4.tif"))
-bio5 <- raster(paste0("raster/wc2.1_2.5m_bio_5.tif"))
-bio6 <- raster(paste0("raster/wc2.1_2.5m_bio_6.tif"))
-bio7 <- raster(paste0("raster/wc2.1_2.5m_bio_7.tif"))
-bio8 <- raster(paste0("raster/wc2.1_2.5m_bio_8.tif"))
-bio9 <- raster(paste0("raster/wc2.1_2.5m_bio_9.tif"))
-bio10 <- raster(paste0("raster/wc2.1_2.5m_bio_10.tif"))
-bio11 <- raster(paste0("raster/wc2.1_2.5m_bio_11.tif"))
-bio12 <- raster(paste0("raster/wc2.1_2.5m_bio_12.tif"))
-bio13 <- raster(paste0("raster/wc2.1_2.5m_bio_13.tif"))
-bio14 <- raster(paste0("raster/wc2.1_2.5m_bio_14.tif"))
-bio15 <- raster(paste0("raster/wc2.1_2.5m_bio_15.tif"))
-bio16 <- raster(paste0("raster/wc2.1_2.5m_bio_16.tif"))
-bio17 <- raster(paste0("raster/wc2.1_2.5m_bio_17.tif"))
-bio18 <- raster(paste0("raster/wc2.1_2.5m_bio_18.tif"))
-bio19 <- raster(paste0("raster/wc2.1_2.5m_bio_19.tif"))
-elev <- raster(paste0("raster/wc2.1_2.5m_elev.tif"))
-PopDen <- raster(paste0("raster/population_density.tif"))
-UrbAcc <- raster(paste0("raster/urban_accessibility.tif"))
-LC <- raster(paste0("raster/land_cover.tif"))
-NDVI <- raster(paste0("raster/veg_index.tif"))
+# Bioclimatic variable calculation
+prec <- list.files(path = "raster/prec/", pattern='.tif', 
+                       all.files=TRUE, full.names=TRUE)
+prec <- stack(prec)
 
-### Projections 
+tmax <- list.files(path = "raster/tmax/", pattern='.tif', 
+                   all.files=TRUE, full.names=TRUE)
+tmax <- stack(tmax)
 
-crs(LC) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+tmin <- list.files(path = "raster/tmin/", pattern='.tif', 
+                   all.files=TRUE, full.names=TRUE)
+tmin <- stack(tmin)
 
-### Crop rasters
+bio <- biovars(prec, tmin, tmax)
+stackSave(bio, "raster/bioclim")
 
-NEA <- read_sf("South_America.shp")
+# Load environmental layers 
 
-bio1 <- terra::crop(bio1, NEA)
-bio2 <- terra::crop(bio2, NEA)
-bio3 <- terra::crop(bio3, NEA)
-bio4 <- terra::crop(bio4, NEA)
-bio5 <- terra::crop(bio5, NEA)
-bio6 <- terra::crop(bio6, NEA)
-bio7 <- terra::crop(bio7, NEA)
-bio8 <- terra::crop(bio8, NEA)
-bio9 <- terra::crop(bio9, NEA)
-bio10 <- terra::crop(bio10, NEA)
-bio11 <- terra::crop(bio11, NEA)
-bio12 <- terra::crop(bio12, NEA)
-bio13 <- terra::crop(bio13, NEA)
-bio14 <- terra::crop(bio14, NEA)
-bio15 <- terra::crop(bio15, NEA)
-bio16 <- terra::crop(bio16, NEA)
-bio17 <- terra::crop(bio17, NEA)
-bio18 <- terra::crop(bio18, NEA)
-bio19 <- terra::crop(bio19, NEA)
-elev <- terra::crop(elev, NEA)
-ndvi <- terra::crop(NDVI, NEA)
-popden <- terra::crop(PopDen, NEA)
-urbacc <- terra::crop(UrbAcc, NEA)
-LC <- terra::crop(LC, NEA)
+elev <- raster(paste0("raster/elevation.tif"))
+popden <- raster(paste0("raster/popden.tif"))
+urbacc <- raster(paste0("raster/urbacc.tif"))
+LC <- raster(paste0("raster/landc.tif"))
 
 ### Resampled to 2.5m
 
-LC <- resample(LC, bio1, method='ngb')
-popden <- resample(popden, bio1, method='ngb')
-urbacc <- resample(urbacc, bio1, method='ngb')
-ndvi <- urbacc <- resample(ndvi, bio1, method='ngb')
+LC <- resample(LC, elev, method='ngb')
 
-### Mask
+# Crop rasters
 
-bio1 <- terra::mask(bio1, NEA)
-bio2 <- terra::mask(bio2, NEA)
-bio3 <- terra::mask(bio3, NEA)
-bio4 <- terra::mask(bio4, NEA)
-bio5 <- terra::mask(bio5, NEA)
-bio6 <- terra::mask(bio6, NEA)
-bio7 <- terra::mask(bio7, NEA)
-bio8 <- terra::mask(bio8, NEA)
-bio9 <- terra::mask(bio9, NEA)
-bio10 <- terra::mask(bio10, NEA)
-bio11 <- terra::mask(bio11, NEA)
-bio12 <- terra::mask(bio12, NEA)
-bio13 <- terra::mask(bio13, NEA)
-bio14 <- terra::mask(bio14, NEA)
-bio15 <- terra::mask(bio15, NEA)
-bio16 <- terra::mask(bio16, NEA)
-bio17 <- terra::mask(bio17, NEA)
-bio18 <- terra::mask(bio18, NEA)
-bio19 <- terra::mask(bio19, NEA)
+NEA <- read_sf("shp/Sudamérica.shp")
+
+bio <- terra::crop(bio, NEA)
+elev <- terra::crop(elev, NEA)
+popden <- terra::crop(popden, NEA)
+urbacc <- terra::crop(urbacc, NEA)
+LC <- terra::crop(LC, NEA)
+
+# Mask
+
+bio <- terra::mask(bio, NEA)
 elev <- terra::mask(elev, NEA)
-ndvi <- terra::mask(ndvi, NEA)
 popden <- terra::mask(popden, NEA)
 urbacc <- terra::mask(urbacc, NEA)
 LC <- terra::mask(LC, NEA)
 
-### Write rasters
+# Separate Bioclimatic variables
 
-terra::writeRaster(x = bio1, filename = 'raster/current/bio1.tif')
-terra::writeRaster(x = bio2, filename = 'raster/current/bio2.tif')
-terra::writeRaster(x = bio3, filename = 'raster/current/bio3.tif')
-terra::writeRaster(x = bio4, filename = 'raster/current/bio4.tif')
-terra::writeRaster(x = bio5, filename = 'raster/current/bio5.tif')
-terra::writeRaster(x = bio6, filename = 'raster/current/bio6.tif')
-terra::writeRaster(x = bio7, filename = 'raster/current/bio7.tif')
-terra::writeRaster(x = bio8, filename = 'raster/current/bio8.tif')
-terra::writeRaster(x = bio9, filename = 'raster/current/bio9.tif')
-terra::writeRaster(x = bio10, filename = 'raster/current/bio10.tif')
-terra::writeRaster(x = bio11, filename = 'raster/current/bio11.tif')
-terra::writeRaster(x = bio12, filename = 'raster/current/bio12.tif')
-terra::writeRaster(x = bio13, filename = 'raster/current/bio13.tif')
-terra::writeRaster(x = bio14, filename = 'raster/current/bio14.tif')
-terra::writeRaster(x = bio15, filename = 'raster/current/bio15.tif')
-terra::writeRaster(x = bio16, filename = 'raster/current/bio16.tif')
-terra::writeRaster(x = bio17, filename = 'raster/current/bio17.tif')
-terra::writeRaster(x = bio18, filename = 'raster/current/bio18.tif')
-terra::writeRaster(x = bio19, filename = 'raster/current/bio19.tif')
-terra::writeRaster(x = elev, filename = 'raster/current/elevation.tif')
-terra::writeRaster(x = ndvi, filename = 'raster/current/ndvi.tif')
-terra::writeRaster(x = LC, filename = 'raster/current/land_cover.tif')
-terra::writeRaster(x = popden, filename = 'raster/current/populationdensity.tif')
-terra::writeRaster(x = urbacc, filename = 'raster/current/urban_accessibility.tif')
+bio1 <- bio[[1]]
+bio2 <- bio[[2]]
+bio3 <- bio[[3]]
+bio4 <- bio[[4]]
+bio5 <- bio[[5]]
+bio6 <- bio[[6]]
+bio7 <- bio[[7]]
+bio8 <- bio[[8]]
+bio9 <- bio[[9]]
+bio10 <- bio[[10]]
+bio11 <- bio[[11]]
+bio12 <- bio[[12]]
+bio13 <- bio[[13]]
+bio14 <- bio[[14]]
+bio15 <- bio[[15]]
+bio16 <- bio[[16]]
+bio17 <- bio[[17]]
+bio18 <- bio[[18]]
+bio19 <- bio[[19]]
+
+# Write rasters
+
+terra::writeRaster(x = bio1, filename = 'raster/bio1.tif')
+terra::writeRaster(x = bio2, filename = 'raster/bio2.tif')
+terra::writeRaster(x = bio3, filename = 'raster/bio3.tif')
+terra::writeRaster(x = bio4, filename = 'raster/io4.tif')
+terra::writeRaster(x = bio5, filename = 'raster/bio5.tif')
+terra::writeRaster(x = bio6, filename = 'raster/bio6.tif')
+terra::writeRaster(x = bio7, filename = 'raster/bio7.tif')
+terra::writeRaster(x = bio8, filename = 'raster/bio8.tif')
+terra::writeRaster(x = bio9, filename = 'raster/bio9.tif')
+terra::writeRaster(x = bio10, filename = 'raster/bio10.tif')
+terra::writeRaster(x = bio11, filename = 'raster/bio11.tif')
+terra::writeRaster(x = bio12, filename = 'raster/bio12.tif')
+terra::writeRaster(x = bio13, filename = 'raster/bio13.tif')
+terra::writeRaster(x = bio14, filename = 'raster/bio14.tif')
+terra::writeRaster(x = bio15, filename = 'raster/bio15.tif')
+terra::writeRaster(x = bio16, filename = 'raster/bio16.tif')
+terra::writeRaster(x = bio17, filename = 'raster/bio17.tif')
+terra::writeRaster(x = bio18, filename = 'raster/bio18.tif')
+terra::writeRaster(x = bio19, filename = 'raster/bio19.tif')
+terra::writeRaster(x = elev, filename = 'raster/elevation.tif')
+terra::writeRaster(x = LC, filename = 'raster/land_cover.tif')
+terra::writeRaster(x = popden, filename = 'raster/population_density.tif')
+terra::writeRaster(x = urbacc, filename = 'raster/urban_accessibility.tif')
